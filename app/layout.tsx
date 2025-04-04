@@ -8,7 +8,7 @@ const monaSans = Mona_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "AI Interview Agent",
+  title: "PrepSmart: AI Interview Agent",
   description: "AI-powered platform for interview preparation.",
 };
 
@@ -18,9 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // ensure only dark mode to user-proof 3rd party resources
     <html lang="en" className="dark">
-      <body className={`${monaSans.variable} antialiased`} >
+      <body className={`${monaSans.variable} antialiased pattern`} >
         {children}
       </body>
     </html>
