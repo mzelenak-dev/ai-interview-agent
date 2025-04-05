@@ -3,11 +3,13 @@
 import { z } from "zod"
 import Link from "next/link"
 import Image from "next/image"
+import { toast } from "sonner"
+import FormField from "./FormField"
 import { useForm } from "react-hook-form"
 import { Form } from "@/components/ui/form"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { toast } from "sonner"
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -18,6 +20,7 @@ const authFormSchema = (type: FormType) => {
 }
 
 const AuthForm = ({ type }: { type: FormType }) => {
+  const router = useRouter();
   const isSignIn = type === 'sign-in';
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -32,9 +35,17 @@ const AuthForm = ({ type }: { type: FormType }) => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if( type === 'sign-up') {
-        console.log('SIGN-UP', values);
+        toast.success('Account created successfully. Please sign in.');
+        // simulate server response time delay to read toast
+        setTimeout(() => {
+          router.push('/sign-in');
+        }, 500 );
       } else if (type === 'sign-in') {
-        console.log('SIGN-IN', values);
+        toast.success('Sign in successful.');
+        // simulate server response time delay to read toast
+        setTimeout(() => {
+          router.push('/');
+        }, 500 );
       } else {
         console.log('no type provided');
       }
@@ -54,18 +65,52 @@ const AuthForm = ({ type }: { type: FormType }) => {
             height={32}
             width={38}
           />
-          <h2 className="text-primary-100">PrepSmart</h2>
+          <h2 className="text-primary-100">CleverPrep</h2>
         </div>
-        <h3 className="text-center">Practice job interview with AI</h3>
+        <h3 className="text-center">AI-Powered Interview Practice</h3>
         
         <Form { ...form }>
           <form
             className="w-full space-y-6 mt-4 form"
             onSubmit={ form.handleSubmit(onSubmit) }
           >
-            { !isSignIn && <p>Name</p> }
-            <p>Email</p>
-            <p>Password</p>
+            { !isSignIn && (
+              <>
+                <FormField
+                  name="name"
+                  label="Name"
+                  required={true}
+                  control={form.control}
+                  placeholder="Enter Your Name"
+                />
+
+                <FormField
+                  name="phone"
+                  label="Phone Number"
+                  required={false}
+                  control={form.control}
+                  placeholder="Enter Your Phone Number"
+                />
+              </>
+            )}
+
+              <FormField
+                name="email"
+                label="Email"
+                required={true}
+                control={form.control}
+                placeholder="Enter Your Email"
+                type="email"
+              />
+              <FormField
+                name="password"
+                label="Password"
+                required={true}
+                control={form.control}
+                placeholder="Enter Your Password"
+                type="password"
+              />
+
             <Button className="btn" type="submit">
               {isSignIn ? 'Sign In' : 'Create an Account'}
             </Button>
@@ -75,7 +120,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           {isSignIn ? 'No Account Yet? ' : 'Have an Account already? '}
           <Link
             className="font-bold text-user-primary ml-1"
-            href={ !isSignIn ? '/sign-in' : 'sign-up' }
+            href={ !isSignIn ? '/sign-in' : '/sign-up' }
           >
             {isSignIn ? 'Sign Up': 'Sign In'}
           </Link>
