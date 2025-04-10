@@ -10,6 +10,9 @@ import { Form } from "@/components/ui/form"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/firebase/client"
+import { signUp } from "@/lib/actions/auth.action"
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -32,14 +35,26 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   })
  
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if( type === 'sign-up') {
+        const { name, email, password } = values;
+        const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+        const result = await signUp({
+          uid: userCredentials.user.uid,
+          name: name!,
+          email,
+          password,
+        });
+
+        if(!result?.success) {
+          toast.error(result?.message);
+          return;
+        }
+        
         toast.success('Account created successfully. Please sign in.');
-        // simulate server response time delay to read toast
-        setTimeout(() => {
-          router.push('/sign-in');
-        }, 500 );
+        router.push('/sign-in');
+        
       } else if (type === 'sign-in') {
         toast.success('Sign in successful.');
         // simulate server response time delay to read toast
