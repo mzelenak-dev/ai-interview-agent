@@ -10,9 +10,9 @@ import { Form } from "@/components/ui/form"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { createUserWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "@/firebase/client"
-import { signUp } from "@/lib/actions/auth.action"
+import { signIn, signUp } from "@/lib/actions/auth.action"
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -56,11 +56,19 @@ const AuthForm = ({ type }: { type: FormType }) => {
         router.push('/sign-in');
         
       } else if (type === 'sign-in') {
+        const { email, password } = values;
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const idToken = await userCredential.user.getIdToken();
+
+        if(!idToken) {
+          toast.error('Sign in failed');
+          return;
+        }
+
+        await signIn({ email, idToken });
+        
         toast.success('Sign in successful.');
-        // simulate server response time delay to read toast
-        setTimeout(() => {
-          router.push('/');
-        }, 500 );
+        router.push('/');
       } else {
         console.log('no type provided');
       }
